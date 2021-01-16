@@ -1,16 +1,18 @@
-#! /usr/bin/python3
+#!/usr/bin/python3
 
 import os
 import asyncio
 import getpass
+from typing import Optional
 import i3ipc
 import platform
-from time import sleep
+from functools import partial
+import sys
 
 from icon_resolver import IconResolver
 
 #: Max length of single window title
-MAX_LENGTH = 26
+MAX_LENGTH = 60
 #: Base 1 index of the font that should be used for icons
 ICON_FONT = 3
 
@@ -43,29 +45,36 @@ COMMAND_PATH = os.path.join(SCRIPT_DIR, 'command.py')
 icon_resolver = IconResolver(ICONS)
 
 
-def main():
+def main(ws: Optional[int]=None):
     i3 = i3ipc.Connection()
 
-    i3.on('workspace::focus', on_change)
-    i3.on('window::focus', on_change)
-    i3.on('window', on_change)
+    on_change_ws = partial(on_change, ws)
+    i3.on('workspace::focus', on_change_ws)
+    i3.on('window::focus', on_change_ws)
+    i3.on('window', on_change_ws)
 
     loop = asyncio.get_event_loop()
 
     loop.run_in_executor(None, i3.main)
 
-    render_apps(i3)
+    render_apps(i3, ws)
 
     loop.run_forever()
 
 
-def on_change(i3, e):
-    render_apps(i3)
+def on_change(ws: Optional[int], i3: i3ipc.Connection, _event: i3ipc.events.IpcBaseEvent):
+    render_apps(i3, ws)
 
 
-def render_apps(i3):
+def render_apps(i3: i3ipc.Connection, ws: Optional[int]):
     tree = i3.get_tree()
+    wss = i3.get_workspaces()
+    visible_ws = [ws.name for ws in wss if ws.visible]
+    
     apps = tree.leaves()
+    apps = [app for app in apps if app.workspace().name in visible_ws]
+    if ws is not None:
+        apps = [app for app in apps if (int(app.workspace().name)-1) % 3 == ws]
     apps.sort(key=lambda app: app.workspace().name)
 
     out = '%{O12}'.join(format_entry(app) for app in apps)
@@ -73,7 +82,7 @@ def render_apps(i3):
     print(out, flush=True)
 
 
-def format_entry(app):
+def format_entry(app: i3ipc.Con):
     title = make_title(app)
     u_color = '#b4619a' if app.focused else\
         '#e84f4f' if app.urgent else\
@@ -82,8 +91,9 @@ def format_entry(app):
     return '%%{u%s} %s %%{u-}' % (u_color, title)
 
 
-def make_title(app):
-    out = get_prefix(app) + format_title(app)
+def make_title(app: i3ipc.Con):
+    #out = get_prefix(app) + format_title(app)
+    out = format_title(app)
 
     if app.focused:
         out = '%{F#fff}' + out + '%{F-}'
@@ -91,7 +101,7 @@ def make_title(app):
     return '%%{A1:%s %s:}%s%%{A-}' % (COMMAND_PATH, app.id, out)
 
 
-def get_prefix(app):
+def get_prefix(app: i3ipc.Con):
     icon = icon_resolver.resolve({
         'class': app.window_class,
         'name': app.name,
@@ -100,7 +110,7 @@ def get_prefix(app):
     return ('%%{T%s}%s%%{T-}' % (ICON_FONT, icon))
 
 
-def format_title(app):
+def format_title(app: i3ipc.Con):
     klass = app.window_class
     name = app.name
 
@@ -111,4 +121,7 @@ def format_title(app):
 
     return title
 
-main()
+if len(sys.argv) == 2:
+    main(int(sys.argv[1]))
+else:
+    main()
