@@ -12,7 +12,7 @@ import sys
 from icon_resolver import IconResolver
 
 #: Max length of single window title
-MAX_LENGTH = 60
+MAX_LENGTH = 50
 #: Base 1 index of the font that should be used for icons
 ICON_FONT = 3
 
@@ -33,10 +33,11 @@ ICONS = [
     ('*', '\ufaae'),
 ]
 
-FORMATERS = {
+FORMATTERS = {
     'Chromium': lambda title: title.replace(' - Chromium', ''),
     'Firefox': lambda title: title.replace(' - Mozilla Firefox', ''),
     'URxvt': lambda title: title.replace('%s@%s: ' % (USER, HOSTNAME), ''),
+    'Code': lambda title: title.replace(' - Visual Studio Code', ''),
 }
 
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -114,7 +115,7 @@ def format_title(app: i3ipc.Con):
     klass = app.window_class
     name = app.name
 
-    title = FORMATERS[klass](name) if klass in FORMATERS else name
+    title = FORMATTERS[klass](name) if klass in FORMATTERS else name
 
     if len(title) > MAX_LENGTH:
         title = title[:MAX_LENGTH - 3] + '...'
