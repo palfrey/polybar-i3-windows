@@ -3,7 +3,7 @@
 import os
 import asyncio
 import getpass
-from typing import Optional
+from typing import Callable, Optional
 import i3ipc
 import platform
 from functools import partial
@@ -33,7 +33,7 @@ ICONS = [
     ('*', '\ufaae'),
 ]
 
-FORMATTERS = {
+FORMATTERS: dict[str, Callable[[str], str]] = {
     'Chromium': lambda title: title.replace(' - Chromium', ''),
     'Firefox': lambda title: title.replace(' - Mozilla Firefox', ''),
     'URxvt': lambda title: title.replace('%s@%s: ' % (USER, HOSTNAME), ''),
@@ -113,11 +113,13 @@ def get_prefix(app: i3ipc.Con):
 
 def format_title(app: i3ipc.Con):
     klass = app.window_class
-    name = app.name
+    name: Optional[str] = app.name
 
     title = FORMATTERS[klass](name) if klass in FORMATTERS else name
 
-    if len(title) > MAX_LENGTH:
+    if title is None:
+        title = ""
+    elif len(title) > MAX_LENGTH:
         title = title[:MAX_LENGTH - 3] + '...'
 
     return title
