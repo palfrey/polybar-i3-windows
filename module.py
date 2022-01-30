@@ -115,7 +115,7 @@ def format_title(app: i3ipc.Con):
     klass = app.window_class
     name: Optional[str] = app.name
 
-    title = FORMATTERS[klass](name) if klass in FORMATTERS else name
+    title = FORMATTERS[klass](name) if klass in FORMATTERS and name is not None else name
 
     if title is None:
         title = ""
