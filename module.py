@@ -99,7 +99,7 @@ def make_title(app: i3ipc.Con):
     if app.focused:
         out = '%{F#fff}' + out + '%{F-}'
 
-    return '%%{A1:%s %s:}%s%%{A-}' % (COMMAND_PATH, app.id, out)
+    return '%%{A1:%s %s:}%s%%{A}' % (COMMAND_PATH, app.id, out)
 
 
 def get_prefix(app: i3ipc.Con):
