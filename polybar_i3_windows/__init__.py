@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!python3
 
 import os
 import asyncio
@@ -9,7 +9,7 @@ import platform
 from functools import partial
 import sys
 
-from icon_resolver import IconResolver
+from .icon_resolver import IconResolver
 
 #: Max length of single window title
 MAX_LENGTH = 50
@@ -124,7 +124,8 @@ def format_title(app: i3ipc.Con):
 
     return title
 
-if len(sys.argv) == 2:
-    main(int(sys.argv[1]))
-else:
-    main()
+def start():
+    if len(sys.argv) == 2:
+        main(int(sys.argv[1]))
+    else:
+        main()

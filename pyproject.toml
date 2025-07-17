@@ -1,0 +1,19 @@
+[project]
+name = "polybar-i3-windows"
+version = "0.1.0"
+description = ""
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "i3ipc"
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+polybar-i3-windows = "polybar_i3_windows:start"
