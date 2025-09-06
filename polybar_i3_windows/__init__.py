@@ -36,6 +36,7 @@ ICONS = [
 FORMATTERS: dict[str, Callable[[str], str]] = {
     'Chromium': lambda title: title.replace(' - Chromium', ''),
     'Firefox': lambda title: title.replace(' - Mozilla Firefox', ''),
+    'waterfox': lambda title: title.replace(' — Waterfox', ''),
     'URxvt': lambda title: title.replace('%s@%s: ' % (USER, HOSTNAME), ''),
     'Code': lambda title: title.replace(' - Visual Studio Code', ''),
 }
