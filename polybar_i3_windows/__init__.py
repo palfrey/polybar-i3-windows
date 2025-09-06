@@ -57,7 +57,7 @@ def main(ws_raw: Optional[str]=None):
         else:
             for workspace in i3.get_workspaces():
                 if workspace.output == ws_raw:
-                    ws = workspace.num
+                    ws = workspace.num - 1
                     break
             else:
                 raise Exception(f"Can't find workspace {ws_raw}")
