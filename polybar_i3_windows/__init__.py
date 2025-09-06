@@ -46,8 +46,22 @@ COMMAND_PATH = os.path.join(SCRIPT_DIR, 'command.py')
 icon_resolver = IconResolver(ICONS)
 
 
-def main(ws: Optional[int]=None):
+def main(ws_raw: Optional[str]=None):
     i3 = i3ipc.Connection()
+
+    if ws_raw is None:
+        ws = None
+    else:
+        if ws_raw.isdecimal():
+            ws = int(ws_raw)
+        else:
+            for workspace in i3.get_workspaces():
+                if workspace.output == ws_raw:
+                    ws = workspace.num
+                    break
+            else:
+                raise Exception(f"Can't find workspace {ws_raw}")
+
 
     on_change_ws = partial(on_change, ws)
     i3.on('workspace::focus', on_change_ws)
@@ -71,7 +85,7 @@ def render_apps(i3: i3ipc.Connection, ws: Optional[int]):
     tree = i3.get_tree()
     wss = i3.get_workspaces()
     visible_ws = [ws.name for ws in wss if ws.visible]
-    
+
     apps = tree.leaves()
     apps = [app for app in apps if app.workspace().name in visible_ws]
     if ws is not None:
@@ -126,6 +140,6 @@ def format_title(app: i3ipc.Con):
 
 def start():
     if len(sys.argv) == 2:
-        main(int(sys.argv[1]))
+        main(sys.argv[1])
     else:
         main()
